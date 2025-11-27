@@ -43,10 +43,10 @@ public class Rod : MonoBehaviour
             transform.position += _travelDir * _travelSpeed;
             // Check for collision
             if (Physics.Raycast(
-                transform.position, 
+                transform.position - _travelDir * _travelSpeed, 
                 _travelDir, 
                 out RaycastHit hit, 
-                _travelSpeed,
+                _travelSpeed * 2,
                 _layerMask
             ))
             // Collision found 
@@ -102,8 +102,13 @@ public class Rod : MonoBehaviour
 
         if (hookedSurface != null)
         {
-            hookedSurface.OnReleased(_player, this);
+            Vector3 launchVector = hookedSurface.OnReleased(_player, this);
             hookedSurface = null;
+
+            if (launchVector != Vector3.zero)
+            {
+                _player.ApplyForce(launchVector);
+            }
         }
     }
 }
