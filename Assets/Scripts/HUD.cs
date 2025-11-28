@@ -7,9 +7,9 @@ public class HUD : MonoBehaviour
     [SerializeField] private Color[] hammerChargeColors;
     [SerializeField] private Animator _hammerAnimator;
 
-    public void UpdateHammer(bool charging, int chargeStageIndex)
-    {
-        _hammerImage.color = hammerChargeColors[chargeStageIndex];
-        _hammerAnimator.SetBool("isCharging", charging);
-    }
+    // public void UpdateHammer(bool charging, int chargeStageIndex)
+    // {
+    //     _hammerImage.color = hammerChargeColors[chargeStageIndex];
+    //     _hammerAnimator.SetBool("isCharging", charging);
+    // }
 }

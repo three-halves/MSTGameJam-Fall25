@@ -5,7 +5,8 @@ public class Hammer : MonoBehaviour
 {
     [Header("Component References")]
     [SerializeField] private Player _player;
-    [SerializeField] private HUD _hud;
+    [SerializeField] private Animator _animator;
+    [SerializeField] private ParticleSystem _particleSystem;
 
     [Header("Usage Parameters")]
     [SerializeField] private float _maxChargeTime;
@@ -27,7 +28,7 @@ public class Hammer : MonoBehaviour
         {
             _chargeTimer = 0f;
             _isCharging = false;
-            _hud.UpdateHammer(_isCharging, 0);
+            _animator.SetBool("Charging", _isCharging);
         };
     }
 
@@ -40,7 +41,8 @@ public class Hammer : MonoBehaviour
             if (_currentChargeIndex != ind)
             {
                 _currentChargeIndex = ind;
-                _hud.UpdateHammer(_isCharging, ind);
+                _animator.SetBool("Charging", _isCharging);
+                _animator.SetInteger("ChargeLevel", ind);
             }
         }
         _cooldownTimer -= Time.fixedDeltaTime;
@@ -52,7 +54,7 @@ public class Hammer : MonoBehaviour
         if (_cooldownTimer > 0f) return;
         _chargeTimer = 0f;
         _isCharging = true;
-        _hud.UpdateHammer(_isCharging, 0);
+        _animator.SetBool("Charging", _isCharging);
     }
 
     public void ReleaseCharge()
@@ -68,14 +70,15 @@ public class Hammer : MonoBehaviour
         }
 
         _isCharging = false;
-        _hud.UpdateHammer(_isCharging, 0);
+        _animator.SetBool("Charging", _isCharging);
+        _animator.SetInteger("ChargeLevel", 0);
         _cooldownTimer = _cooldownTime;
     }
 
     private void TryLaunchPlayer(RaycastHit surface)
     {
         Vector3? force = null;
-        float d = Vector3.Dot(_player.GetLookVector(), _player.GetVelocityVector());
+        float d = Vector3.Dot(_player.GetLookVector(), _player.GetVelocityVector() * Time.fixedDeltaTime);
         d = surface.distance - Math.Max(d, 0);
         if (d > _maxDistance) return;
 
@@ -92,6 +95,9 @@ public class Hammer : MonoBehaviour
         
         _player.ApplyForce(force.Value, true);
         _player.ForceWallrunCooldown();
+
+        transform.position = surface.point;
+        _particleSystem.Play();
     }
 
     private int GetForceIndexAtCharge(float t)

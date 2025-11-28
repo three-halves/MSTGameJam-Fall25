@@ -7,6 +7,7 @@ public class Rod : MonoBehaviour
     [SerializeField] private HUD _hud;
     [SerializeField] private FollowTransform _followTransform;
     [SerializeField] private LineRenderer _lineRenderer;
+    [SerializeField] private Animator _animator;
 
     [Header("Usage Parameters")]
     [SerializeField] private float _maxDistance;
@@ -16,7 +17,7 @@ public class Rod : MonoBehaviour
     [SerializeField] private float _travelSpeed;
     [SerializeField] private LayerMask _layerMask;
     [SerializeField] private bool _linearForce;
-    [SerializeField] Vector3 _veiwportOffset;
+    [SerializeField] Transform lineOrigin;
     [SerializeField] private float _disableGravityTime;
 
     // Private Members
@@ -54,6 +55,7 @@ public class Rod : MonoBehaviour
                 if (_player.transform.position.y - hit.point.y < 1) _player.DisableGravityForSeconds(_disableGravityTime);
                 transform.position = hit.point;
                 _onSurface = true;
+                _animator.SetBool("OnSurface", _onSurface);
                 _player.ForceWallrunCooldown();
                 if (hit.transform.TryGetComponent<HookableBase>(out var surface))
                 {
@@ -81,8 +83,14 @@ public class Rod : MonoBehaviour
         }
 
         _lineRenderer.enabled = !_retracted;
-        Vector3 offset = Quaternion.AngleAxis(_player.CameraTransform.rotation.eulerAngles.y, Vector3.up) * _veiwportOffset;
-        Vector3[] positions = new Vector3[]{ _player.transform.position + offset, transform.position };
+        // Vector3 offset = Camera.main.transform.right * _veiwportOffset.x  
+        // + Camera.main.transform.up * _veiwportOffset.y 
+        // + Camera.main.transform.forward * _veiwportOffset.z;
+    }
+
+    public void LateUpdate()
+    {
+        Vector3[] positions = new Vector3[]{ lineOrigin.transform.position, transform.position };
         _lineRenderer.SetPositions(positions);
     }
 
@@ -91,6 +99,7 @@ public class Rod : MonoBehaviour
         _retracted = false;
         _followTransform.enabled = false;
         _travelDir = _player.GetLookVector();
+        _animator.SetBool("Retracted", _retracted);
     }
 
     public void Retract()
@@ -99,6 +108,8 @@ public class Rod : MonoBehaviour
         _retracted = true;
         _followTransform.enabled = true;
         _player.DisableGravityForSeconds(0);
+        _animator.SetBool("OnSurface", _onSurface);
+        _animator.SetBool("Retracted", _retracted);
 
         if (hookedSurface != null)
         {
